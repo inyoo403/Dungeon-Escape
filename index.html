@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Escape</title>
+    <style>
+      html,
+      body,
+      #game-container {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+    <script src="./lib/phaser.js"></script>
+    <script src="./src/scenes/Menu.js"></script>
+    <script src="./src/scenes/Play.js"></script>
+    <script src="./src/scenes/Inventory.js"></script>
+    <script src="./src/scenes/Upgrades.js"></script>
+    <script src="./src/generators/DungeonGenerator.js"></script>
+    <script src="./src/scenes/Dungeons.js"></script>
+    <script src="./src/scenes/Instructions.js"></script>
+    <script src="./src/scenes/Credits.js"></script>
+    <script src="./src/scenes/Saves.js"></script>
+    <script src="./src/main.js"></script>
+  </head>
+
+  <body>
+    <div id="game-container"></div>
+  </body>
+</html>

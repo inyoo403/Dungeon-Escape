@@ -1,0 +1,14 @@
+{
+  "name": "dungeon-escape",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && shx cp -r lib src assets dist",
+    "preview": "vite preview",
+    "clean": "node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true}); require('fs').rmSync('.vite',{recursive:true,force:true}); console.log('Cleaned.')\""
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "shx": "^0.3.4"
+  }
+}
