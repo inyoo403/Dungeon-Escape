@@ -68,7 +68,6 @@ class Dungeons extends Phaser.Scene {
     // camera follows player
     this.cameras.main.startFollow(this.player);
     this.syncLantern();
-    this.refreshDebugState();
   }
 
   loadFloor(floorNum) {
@@ -168,7 +167,6 @@ class Dungeons extends Phaser.Scene {
     this.resetExploredOverlay();
     this.updateCurrentRoom(true);
     this.syncLantern();
-    this.refreshDebugState();
   }
 
   drawFloor(floor) {
@@ -386,7 +384,6 @@ class Dungeons extends Phaser.Scene {
     }
 
     this.syncLantern();
-    this.refreshDebugState();
   }
 
   checkStairs() {
@@ -1078,36 +1075,6 @@ class Dungeons extends Phaser.Scene {
       this.exploredOverlay.erase(this.exploredMaskKey, eraseX, eraseY);
     }
     this.lanternGlow.setPosition(playerWorldX, playerWorldY);
-  }
-
-  refreshDebugState() {
-    const payload = {
-      scene: this.scene.key,
-      floor: this.currentFloor + 1,
-      totalFloors: this.dungeon?.totalFloors ?? 0,
-      player: this.player
-        ? {
-          x: Math.round(this.player.x),
-          y: Math.round(this.player.y),
-          tileX: this.worldToTileX(this.player.x),
-          tileY: this.worldToTileY(this.player.y),
-        }
-        : null,
-      prompts: {
-        nearStair: Boolean(this.nearStair),
-        nearExit: Boolean(this.nearExit),
-      },
-      currentRoom: this.currentRoom,
-      enemies: this.enemies.map((enemy) => ({
-        id: enemy.id,
-        roomId: enemy.roomId,
-        x: Math.round(enemy.sprite.x),
-        y: Math.round(enemy.sprite.y),
-      })),
-      coordinateSystem: 'origin top-left, +x right, +y down',
-    };
-
-    globalThis.__DUNGEON_DEBUG_STATE__ = payload;
   }
 
   resetForFreshDungeonRun() {
