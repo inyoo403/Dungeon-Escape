@@ -633,49 +633,6 @@ function generateDungeon() {
     return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
   }
 
-  /** Build adjacency from paths and BFS to get distance from startRoom to each room. */
-  function getRoomDistancesFromStart(rooms, paths, startRoom) {
-    const adj = new Map();
-    for (const room of rooms) {
-      adj.set(room.id, []);
-    }
-    for (const path of paths) {
-      if (path.from && path.to && path.from !== 'deadend' && !path.to.startsWith('deadend')) {
-        adj.get(path.from)?.push(path.to);
-        adj.get(path.to)?.push(path.from);
-      }
-    }
-    const dist = new Map();
-    const q = [startRoom.id];
-    dist.set(startRoom.id, 0);
-    while (q.length > 0) {
-      const rid = q.shift();
-      const d = dist.get(rid);
-      for (const nid of adj.get(rid) || []) {
-        if (!dist.has(nid)) {
-          dist.set(nid, d + 1);
-          q.push(nid);
-        }
-      }
-    }
-    return dist;
-  }
-
-  /** Return the room furthest from startRoom that is reachable via paths. */
-  function getFurthestReachableRoom(rooms, paths, startRoom) {
-    const dist = getRoomDistancesFromStart(rooms, paths, startRoom);
-    let maxDist = -1;
-    let furthestRoom = null;
-    for (const room of rooms) {
-      const d = dist.get(room.id);
-      if (d !== undefined && d > maxDist) {
-        maxDist = d;
-        furthestRoom = room;
-      }
-    }
-    return furthestRoom || rooms[0];
-  }
-
   function pickSpacedFloorTileInRoom(
     room,
     blockedTiles,
@@ -990,6 +947,10 @@ function generateDungeon() {
 
     // connect rooms with pathfinding outside room boundaries
     rooms.sort((a, b) => a.x + a.y - (b.x + b.y));
+    rooms.forEach((room, index) => {
+      room.roomIndex = index + 1;
+      room.roomLabel = `Room ${room.roomIndex}`;
+    });
     const paths = [];
     const occupiedPathCells = new Set();
     const roomDoorTiles = new Map(rooms.map((room) => [room.id, new Set()]));
@@ -1125,51 +1086,14 @@ function generateDungeon() {
     // normalize each room so every room floor cell is connected.
     rooms.forEach((room) => ensureConnectivity(room));
 
-    // add stairs and special rooms - spawn room is furthest from these
+    // add stairs if there's another floor
     const stairs = [];
     const blockedSpecialTiles = [];
 
-    // Determine spawn room for this floor (where player appears)
-    let spawnRoom = null;
-    if (f === 0 && rooms.length > 0) {
-      spawnRoom = rooms[0];
-      spawnRoom.isStart = true;
-      const startTile = pickSpacedFloorTileInRoom(
-        spawnRoom,
-        blockedSpecialTiles,
-        4,
-        2,
-      );
-      spawnRoom.startPos = { x: startTile.x, y: startTile.y };
-      blockedSpecialTiles.push(startTile);
-    }
-
-    // Place up stairs first (if not first floor) - random room; this becomes spawn when entering from below
-    if (f > 0) {
-      const upStairRoom = rooms[Math.floor(Math.random() * rooms.length)];
-      spawnRoom = upStairRoom;
+    if (f < numFloors - 1) {
+      const stairRoom = rooms[Math.floor(Math.random() * rooms.length)];
       const stairTile = pickSpacedFloorTileInRoom(
-        upStairRoom,
-        blockedSpecialTiles,
-      );
-      stairs.push({
-        x: stairTile.x,
-        y: stairTile.y,
-        dir: 'up',
-        toFloor: f - 1,
-      });
-      blockedSpecialTiles.push(stairTile);
-    }
-
-    // Down stairs: place in room furthest from spawn (reachable)
-    if (f < numFloors - 1 && rooms.length > 0) {
-      const targetRoom = getFurthestReachableRoom(
-        rooms,
-        paths,
-        spawnRoom || rooms[0],
-      );
-      const stairTile = pickSpacedFloorTileInRoom(
-        targetRoom,
+        stairRoom,
         blockedSpecialTiles,
       );
       stairs.push({
@@ -1181,23 +1105,63 @@ function generateDungeon() {
       blockedSpecialTiles.push(stairTile);
     }
 
-    // End room (last floor): furthest from spawn
-    if (f === numFloors - 1 && rooms.length > 0) {
-      const endRoom = getFurthestReachableRoom(
-        rooms,
-        paths,
-        spawnRoom || rooms[0],
+    if (f > 0) {
+      const stairRoom = rooms[Math.floor(Math.random() * rooms.length)];
+      const stairTile = pickSpacedFloorTileInRoom(
+        stairRoom,
+        blockedSpecialTiles,
       );
-      endRoom.isEnd = true;
+      stairs.push({
+        x: stairTile.x,
+        y: stairTile.y,
+        dir: 'up',
+        toFloor: f - 1,
+      });
+      blockedSpecialTiles.push(stairTile);
+    }
+
+    // mark start room on first floor
+    if (f === 0 && rooms.length > 0) {
+      rooms[0].isStart = true;
+      const startTile = pickSpacedFloorTileInRoom(
+        rooms[0],
+        blockedSpecialTiles,
+        4,
+        2,
+      );
+      rooms[0].startPos = { x: startTile.x, y: startTile.y };
+      blockedSpecialTiles.push(startTile);
+    }
+
+    // mark end room on last floor
+    if (f === numFloors - 1 && rooms.length > 0) {
+      rooms[rooms.length - 1].isEnd = true;
       const endTile = pickSpacedFloorTileInRoom(
-        endRoom,
+        rooms[rooms.length - 1],
         blockedSpecialTiles,
         6,
         3,
       );
-      endRoom.endPos = { x: endTile.x, y: endTile.y };
+      rooms[rooms.length - 1].endPos = { x: endTile.x, y: endTile.y };
       blockedSpecialTiles.push(endTile);
     }
+
+    // add one enemy spawn per room without overlapping player/stairs/exit tiles
+    rooms.forEach((room) => {
+      const enemyTile = pickSpacedFloorTileInRoom(
+        room,
+        blockedSpecialTiles,
+        4,
+        2,
+      );
+      room.enemies = [{
+        id: `${room.id}-enemy-0`,
+        roomId: room.id,
+        x: enemyTile.x,
+        y: enemyTile.y,
+      }];
+      blockedSpecialTiles.push(enemyTile);
+    });
 
     dungeon.floors.push({
       index: f,

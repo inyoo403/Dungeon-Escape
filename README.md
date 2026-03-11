@@ -2,29 +2,19 @@
 
 This game is a roguelike in which the player explores a procedurally generated dungeon, searches for chests, gathers resources, and attempts to escape alive. The core gameplay loop follows the structure: Explore -> Loot -> Craft -> Risk -> Escape.
 
----
-### Run the game
+# Final Project Check-in 2
 
-In the Codespaces terminal:
+added the procedural maze generator for the dungeon as well as a way
 
-```bash
-npm install
-npm run dev
+to do list:
 
-```
-## Changelog (for team)
+- add item/chest/monster placements
+- figure out a monster movement pattern (moves around a certain area around their spawn spot, doesnt leave the designated room its in until trap chest is triggered)
+- update inventory and upgrades sections
+- add more backgound images
 
-### Modified files
+risks:
 
-| File | Changes |
-|------|---------|
-| `src/scenes/Dungeons.js` | Dungeon scene: movement/collision, exit (Q), maze colors |
-| `src/generators/DungeonGenerator.js` | Dungeon generation: end room & down-stairs placement |
-
-### Summary
-
-- **Dungeon entry/exit**: Enter via DUNGEON button on Play scene; press **Q** in dungeon to return to hub (Play). Bottom hint: "Q: Leave dungeon".
-- **Maze visibility**: Floor (green), walls (blue-gray), barrier lines (bronze 3px), corridors (slate blue-gray).
-- **Player collision**: Replaced center-only check with **circle collider** (radius 8px, 5-point check) so the player no longer clips through walls.
-- **Movement**: Speed set to 90 px/s; delta-based movement for consistent speed across frame rates.
-- **End room & down stairs**: EXIT and down-stairs are placed in the **furthest reachable room** from spawn (path-based).
+- since this is a dungeon, we'll need to figure out a way to limit how much of the generated dungeon maze that the player can see
+- need to figure out the combat ai
+- leveling up ai and how that affects the dungeon difficulty levels (which should just affect the monster strengths and the chances of more rare things being generated)

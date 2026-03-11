@@ -30,6 +30,16 @@ const config = {
 
 const game = new Phaser.Game(config);
 globalThis.game = game;
+globalThis.render_game_to_text = () =>
+  JSON.stringify(globalThis.__DUNGEON_DEBUG_STATE__ ?? {
+    scene: game.scene.getScenes(true)[0]?.scene?.key ?? 'unknown',
+    coordinateSystem: 'origin top-left, +x right, +y down',
+  });
+globalThis.advanceTime = (ms = 16.67) => {
+  if (!game.loop) return;
+  const delta = Math.max(16.67, ms);
+  game.step(Date.now(), delta);
+};
 
 // Game state
 const gameState = {

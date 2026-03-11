@@ -1,0 +1,1 @@
+// rarity of lootbox and what items it could contain

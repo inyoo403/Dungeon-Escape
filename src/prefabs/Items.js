@@ -1,0 +1,1 @@
+// items that could get genreated and what stats they have
